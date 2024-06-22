@@ -4,7 +4,7 @@
     url: https://api.github.com/repos/cli/cli/releases/latest
     return_content: true
   register: manifest_result
-- name: download, extract, and install gh CLI
+- name: download and install gh CLI
   become: true
   vars:
     jmes_query: "assets[?ends_with(name, 'amd64.deb')] | [0]"
@@ -12,7 +12,7 @@
     src_prefix: "/usr/src"
   block:
     # TODO: Download signature as well, and verify
-    - name: download tarball
+    - name: download package
       get_url:
         url: "{{ deb_asset.browser_download_url }}"
         dest: "{{ src_prefix }}/{{ deb_asset.name }}"
