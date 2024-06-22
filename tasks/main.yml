@@ -7,23 +7,16 @@
 - name: download, extract, and install gh CLI
   become: true
   vars:
-    jmes_query: "assets[?ends_with(name, '.tar.gz')] | [0]"
-    tarball_asset: "{{ manifest_result.json | json_query(jmes_query) }}"
+    jmes_query: "assets[?ends_with(name, 'amd64.deb')] | [0]"
+    deb_asset: "{{ manifest_result.json | json_query(jmes_query) }}"
     src_prefix: "/usr/src"
   block:
     # TODO: Download signature as well, and verify
     - name: download tarball
       get_url:
-        url: "{{ tarball_asset.browser_download_url }}"
-        dest: "{{ src_prefix }}/{{ tarball_asset.name }}"
-      register: tarball_result
-    - name: extract tarball
-      unarchive:
-        src: "{{ tarball_result.dest }}"
-        dest: "{{ src_prefix }}"
-      register: extract
-    - name: move extracted files to install directory
-      command: "mv /usr/src/{{ extract.files[0] }} /usr/local/bin"
-      args:
-        removes: "/usr/src/{{ extract.files[0] }}"
-        creates: /usr/local/bin
+        url: "{{ deb_asset.browser_download_url }}"
+        dest: "{{ src_prefix }}/{{ deb_asset.name }}"
+      register: download_result
+    - name: install
+      apt:
+        deb: "{{ download_result.dest }}"
